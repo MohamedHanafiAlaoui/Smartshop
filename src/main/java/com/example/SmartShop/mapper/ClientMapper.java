@@ -20,7 +20,8 @@ public class ClientMapper {
                 .tier(client.getTier())
                 .role(client.getRole())
                 .ice(client.getIce())
-                .password(client.getPassword())
+//                .password(client.getPassword())
+                .userId(client.getId())
                 .build();
     }
     }

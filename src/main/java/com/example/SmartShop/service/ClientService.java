@@ -1,5 +1,7 @@
 package com.example.SmartShop.service;
 
+import com.example.SmartShop.dto.ClientDto;
+import com.example.SmartShop.mapper.ClientMapper;
 import com.example.SmartShop.model.entitie.Admin;
 import com.example.SmartShop.model.entitie.Client;
 import com.example.SmartShop.model.entitie.User;
@@ -36,6 +38,21 @@ public class ClientService {
         }
         return clientRepository.save(client);
     }
+
+    public List<ClientDto> getAllClients(Admin admin)
+    {
+        if (!adminService.hasPermission(admin, "GET_ALL_CLIENTS"))
+        {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No permission to get all clients");
+        }
+
+
+        return clientRepository.findAll()
+                .stream().map(ClientMapper::toDto)
+                .toList();
+    }
+
+    
 
 
 }

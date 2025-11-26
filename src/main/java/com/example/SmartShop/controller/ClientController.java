@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/clients")
@@ -44,6 +46,15 @@ public class ClientController {
         Client client = ClientMapper.toEntity(dto);
         Client saved = clientService.createClient(client, admin);
         return ResponseEntity.ok(ClientMapper.toDto(saved));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ClientDto>> getAllClients(HttpServletRequest request)
+    {
+        Admin admin = getAdminFromSession(request);
+        List<ClientDto> dtos = clientService.getAllClients(admin);
+
+        return ResponseEntity.ok(dtos);
     }
 
 }
