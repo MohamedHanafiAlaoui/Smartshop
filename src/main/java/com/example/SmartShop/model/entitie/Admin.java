@@ -46,6 +46,7 @@ public class Admin extends User {
         private String prenom;
         private String department;
         private String employeeId;
+        @OneToMany(mappedBy = "admin", fetch = FetchType.EAGER)
         private List<String> permissions = new ArrayList<>();
         private Boolean active = true;
 
