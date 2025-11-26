@@ -7,6 +7,7 @@ import com.example.SmartShop.model.entitie.Client;
 import com.example.SmartShop.service.AdminService;
 import com.example.SmartShop.service.ClientService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +56,14 @@ public class ClientController {
         List<ClientDto> dtos = clientService.getAllClients(admin);
 
         return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/{id}")
+    public  ResponseEntity<ClientDto> getById(@PathVariable long id , HttpServletRequest request)
+    {
+        Admin admin = getAdminFromSession(request);
+        ClientDto dto = clientService.getClientById(id, admin);
+        return ResponseEntity.ok(dto);
     }
 
 }

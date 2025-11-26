@@ -52,7 +52,21 @@ public class ClientService {
                 .toList();
     }
 
-    
+    public ClientDto getClientById(Long id,Admin admin)
+    {
+        if (!adminService.hasPermission(admin, "GET_CLIENT_BY_ID"))
+        {
+            throw new  ResponseStatusException(HttpStatus.FORBIDDEN, "No permission to get client by id");
+        }
+        Optional<Client> client = clientRepository.findById(id);
+        if (client.isPresent())
+        {
+            return ClientMapper.toDto(client.get());
+        }
+        return null;
+    }
+
+
 
 
 }
