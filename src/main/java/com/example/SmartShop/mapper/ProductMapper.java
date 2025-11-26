@@ -5,6 +5,8 @@ import com.example.SmartShop.model.entitie.Product;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+
 public class ProductMapper {
     private  ProductMapper() {
     }
@@ -29,10 +31,11 @@ public class ProductMapper {
         if (dto == null) throw new ResponseStatusException(HttpStatus.CONFLICT,"product is null");
 
         return Product.builder()
-                .id(dto.getId())
                 .description(dto.getDescription())
                 .prixUnitaireHT(dto.getPrixUnitaireHT())
                 .stock(dto.getStock())
+                .deleted(false)
+                .creationDate(LocalDateTime.now())
                 .name(dto.getName())
                 .build();
     }

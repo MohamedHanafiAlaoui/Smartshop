@@ -4,9 +4,7 @@ import com.example.SmartShop.dto.ClientDto;
 import com.example.SmartShop.mapper.ClientMapper;
 import com.example.SmartShop.model.entitie.Admin;
 import com.example.SmartShop.model.entitie.Client;
-import com.example.SmartShop.model.entitie.User;
 import com.example.SmartShop.repository.ClientRepository;
-import com.example.SmartShop.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,12 +17,10 @@ public class ClientService {
 
     private final ClientRepository clientRepository;
     private final AdminService adminService;
-    private final UserRepository userRepository;
 
-    public ClientService(ClientRepository clientRepository, AdminService adminService, UserRepository userRepository) {
+    public ClientService(ClientRepository clientRepository, AdminService adminService) {
         this.clientRepository = clientRepository;
         this.adminService = adminService;
-        this.userRepository = userRepository;
     }
 
     public Client createClient( Client client, Admin admin) {
