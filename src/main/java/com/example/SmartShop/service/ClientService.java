@@ -66,6 +66,30 @@ public class ClientService {
         return null;
     }
 
+    public ClientDto updateClientById(Long id, ClientDto clientDto, Admin admin)
+    {
+        if (!adminService.hasPermission(admin, "UPDATE_CLIENT_BY_ID"))
+        {
+            throw new  ResponseStatusException(HttpStatus.FORBIDDEN, "No permission to update client");
+        }
+        Client client = clientRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Client not found"));
+
+        if (clientDto.getUsername() != null) client.setUsername(clientDto.getUsername());
+        if (clientDto.getNom() != null) client.setNom(clientDto.getNom());
+        if (clientDto.getEmail() != null) client.setEmail(clientDto.getEmail());
+        if (clientDto.getTelephone() != null) client.setTelephone(clientDto.getTelephone());
+        if (clientDto.getAdresse() != null) client.setAdresse(clientDto.getAdresse());
+        if (clientDto.getTier() != null) client.setTier(clientDto.getTier());
+        if (clientDto.getIce() != null) client.setIce(clientDto.getIce());
+
+
+        Client saved = clientRepository.save(client);
+
+        return ClientDto.toDto(saved);
+    }
+    
+
 
 
 
