@@ -1,7 +1,6 @@
 package com.example.SmartShop.controller;
 
 import com.example.SmartShop.dto.LoginDto;
-import com.example.SmartShop.model.entitie.User;
 import com.example.SmartShop.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +22,8 @@ public class AuthController {
         return userService.authenticate(dto.getUsername(), dto.getPassword())
                 .map(user -> {
                     request.getSession().setAttribute("user", user);
+                    request.getSession().setAttribute("userId", user.getId());
+                    request.getSession().setAttribute("userType", user.getRole());
                     return ResponseEntity.ok("Logged in successfully");
                 })
                 .orElseGet(() -> ResponseEntity.status(401).body("Invalid credentials"));
