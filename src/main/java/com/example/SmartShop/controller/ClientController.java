@@ -66,4 +66,12 @@ public class ClientController {
         return ResponseEntity.ok(dto);
     }
 
+    @PutMapping("/{id}")
+    public  ResponseEntity<ClientDto> updetateClient(@PathVariable long id, @RequestBody ClientDto dto, HttpServletRequest request)
+    {
+        Admin admin = getAdminFromSession(request);
+        ClientDto dtol = clientService.updateClientById(id,dto,admin);
+        return ResponseEntity.ok(dtol);
+    }
+
 }
