@@ -1,5 +1,6 @@
 package com.example.SmartShop.service;
 
+import com.example.SmartShop.dto.ProductDto;
 import com.example.SmartShop.model.entitie.Admin;
 import com.example.SmartShop.model.entitie.Product;
 import com.example.SmartShop.repository.ProductRepository;
@@ -26,5 +27,23 @@ public class ProductService {
         }
 
         return productRepository.save(product);
+    }
+
+    public   Product updateProduct(Long id, ProductDto productDto , Admin admin)
+    {
+        if (!adminService.hasPermission(admin,"updateProduct"))
+            throw  new ResponseStatusException(HttpStatus.FORBIDDEN , "You don't have permission to perform this action");
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND , "Product not found"));
+
+        if (product.getName() != null) product.setName(productDto.getName());
+        if (product.getDescription() != null) product.setDescription(productDto.getDescription());
+        if (product.getPrixUnitaireHT() != null) product.setPrixUnitaireHT(productDto.getPrixUnitaireHT());
+        if (product.getStock() != 0)  product.setStock(productDto.getStock());
+
+
+
+            return productRepository.save(product);
     }
 }
