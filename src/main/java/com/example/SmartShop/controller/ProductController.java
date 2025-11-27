@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.InvalidParameterException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
@@ -67,6 +69,16 @@ public class ProductController {
         Product product = productService.getProductById(id,admin);
 
         return ResponseEntity.ok(ProductMapper.toDto(product));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ProductDto>> getAllProducts(HttpServletRequest request)
+    {
+        Admin  admin = getAdminFromSession(request);
+        List<ProductDto> products =productService.getAllProduct(admin)
+                .stream().map(ProductMapper::toDto).collect(Collectors.toList());
+
+        return ResponseEntity.ok(products);
     }
 
 
