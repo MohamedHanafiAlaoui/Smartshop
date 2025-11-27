@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class ProductService {
 
@@ -60,5 +63,15 @@ public class ProductService {
 
         return product;
 
+    }
+
+    public List<Product>  getAllProduct(Admin admin)
+    {
+        if (!adminService.hasPermission(admin,"getAllProduct"))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN , "You don't have permission to perform this action");
+
+        return productRepository.findAll().stream()
+                .filter(product -> product.getDeleted()!=true)
+                .collect(Collectors.toList());
     }
 }
