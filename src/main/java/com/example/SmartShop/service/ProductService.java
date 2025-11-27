@@ -46,4 +46,19 @@ public class ProductService {
 
             return productRepository.save(product);
     }
+
+
+    public Product getProductById(Long id , Admin admin)
+    {
+        if(!adminService.hasPermission(admin,"getProductById"))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN , "You don't have permission to perform this action");
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND , "Product not found"));
+
+        if(product.getDeleted()) throw  new ResponseStatusException(HttpStatus.NOT_FOUND , "Product is already deleted");
+
+        return product;
+
+    }
 }

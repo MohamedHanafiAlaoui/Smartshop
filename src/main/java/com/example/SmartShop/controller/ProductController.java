@@ -59,5 +59,15 @@ public class ProductController {
         return ResponseEntity.ok(ProductMapper.toDto(update));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductDto> getProduct(@PathVariable  Long id, HttpServletRequest request)
+    {
+        Admin  admin = getAdminFromSession(request);
+
+        Product product = productService.getProductById(id,admin);
+
+        return ResponseEntity.ok(ProductMapper.toDto(product));
+    }
+
 
 }
