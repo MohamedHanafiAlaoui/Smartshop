@@ -74,4 +74,17 @@ public class ProductService {
                 .filter(product -> product.getDeleted()!=true)
                 .collect(Collectors.toList());
     }
+
+    public String deleteProduct(Long id, Admin admin)
+    {
+        if (!adminService.hasPermission(admin,"deleteProduct"))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN , "You don't have permission to perform this action");
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND , "Product not found"));
+
+        product.setDeleted(true);
+
+        return "this product is deleted";
+    }
 }

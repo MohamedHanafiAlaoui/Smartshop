@@ -81,5 +81,14 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
+    @PostMapping("/{id}")
+    public ResponseEntity<String> DeleteProduct(@PathVariable  Long id, HttpServletRequest request)
+    {
+        Admin  admin = getAdminFromSession(request);
+        String message = productService.deleteProduct(id, admin);
+        return ResponseEntity.ok(message);
+    }
+
+
 
 }
