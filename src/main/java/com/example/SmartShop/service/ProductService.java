@@ -85,6 +85,8 @@ public class ProductService {
 
         product.setDeleted(true);
 
+        productRepository.save(product);
+
         return "this product is deleted";
     }
 }
