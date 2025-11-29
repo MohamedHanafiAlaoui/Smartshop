@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -43,5 +44,26 @@ public class Order {
     private String codePromo;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> items;
+    private List<OrderItem> items = new ArrayList<>();
+
+
+    @ManyToOne
+    @JoinColumn(name = "client_id")
+    private Client client;
+
+
+    public static Order create(Client client) {
+        Order o = new Order();
+        o.client = client;
+        o.dateCreation = LocalDateTime.now();
+        o.status = OrderStatus.PENDING;
+        o.numeroCommande = "ORD-" + System.currentTimeMillis();
+        return o;
+    }
+
+    public void addItem(OrderItem item) {
+        this.items.add(item);
+        item.setOrder(this);
+    }
+
 }
