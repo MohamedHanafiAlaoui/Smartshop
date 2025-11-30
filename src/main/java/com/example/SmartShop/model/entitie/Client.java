@@ -49,8 +49,8 @@ public class Client extends User {
     @Column(name = "ice", unique = true)
     private String ice;
 
-//    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private List<Order> orders = new ArrayList<>();
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Order> orders = new ArrayList<>();
 
     @Override
     public String getRole() {
