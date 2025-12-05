@@ -1,6 +1,5 @@
 package com.example.SmartShop.service;
 
-import com.example.SmartShop.dto.ClientDto;
 import com.example.SmartShop.dto.OrderDto;
 import com.example.SmartShop.dto.OrderItemDto;
 import com.example.SmartShop.mapper.OrderItemMapper;
@@ -14,30 +13,34 @@ import com.example.SmartShop.repository.ProductRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.math.BigDecimal;
 import java.util.List;
 
-
 @Service
-
 public class OrderServiceImpl implements OrderService {
+
     private final OrderRepository orderRepository;
     private final ClientRepository clientRepository;
     private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
     private final AdminRepository adminRepository;
+    private final LoyaltyService loyaltyService;
 
-    public OrderServiceImpl(OrderRepository orderRepository, ClientRepository clientRepository,
-                            ProductRepository productRepository, OrderMapper orderMapper,
-                            OrderItemMapper orderItemMapper, AdminRepository adminRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository,
+                            ClientRepository clientRepository,
+                            ProductRepository productRepository,
+                            OrderMapper orderMapper,
+                            OrderItemMapper orderItemMapper,
+                            AdminRepository adminRepository,
+                            LoyaltyService loyaltyService) {
         this.orderRepository = orderRepository;
         this.clientRepository = clientRepository;
         this.productRepository = productRepository;
         this.orderMapper = orderMapper;
         this.orderItemMapper = orderItemMapper;
         this.adminRepository = adminRepository;
+        this.loyaltyService = loyaltyService;
     }
 
     @Override
@@ -58,7 +61,6 @@ public class OrderServiceImpl implements OrderService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
             if (itemDto.getQuantite() > product.getStock()) {
-
                 refused = true;
                 continue;
             }
@@ -73,12 +75,19 @@ public class OrderServiceImpl implements OrderService {
 
         order.setSousTotalHT(sousTotalHT);
 
-        BigDecimal remise = BigDecimal.ZERO;
+        BigDecimal remiseCodePromo = BigDecimal.ZERO;
         if ("PROMO10".equalsIgnoreCase(orderDto.getCodePromo())) {
-            remise = sousTotalHT.multiply(BigDecimal.valueOf(0.10));
+            remiseCodePromo = sousTotalHT.multiply(BigDecimal.valueOf(0.10));
         }
-        order.setMontantRemise(remise);
-        order.setMontantHTApresRemise(sousTotalHT.subtract(remise));
+
+        loyaltyService.updateLoyaltyLevel(client);
+        BigDecimal remiseFidelite = loyaltyService.calculateDiscountAmount(
+                sousTotalHT, loyaltyService.getFidelityDiscount(client, sousTotalHT));
+
+        BigDecimal totalRemise = remiseCodePromo.add(remiseFidelite);
+
+        order.setMontantRemise(totalRemise);
+        order.setMontantHTApresRemise(sousTotalHT.subtract(totalRemise));
 
         BigDecimal tva = order.getMontantHTApresRemise().multiply(BigDecimal.valueOf(0.2));
         order.setTva(tva);
@@ -92,13 +101,15 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Order savedOrder = orderRepository.save(order);
+        clientRepository.save(client); // تحديث مستوى العميل بعد الطلب
+
         return orderMapper.toDto(savedOrder);
     }
+
     @Override
     public OrderDto findOrderById(Long id, Admin admin) {
-        if (!adminRepository.existsById(admin.getId())) {
+        if (!adminRepository.existsById(admin.getId()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin Not Found");
-        }
 
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
@@ -108,9 +119,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderDto> getAllOrders(Admin admin) {
-        if (!adminRepository.existsById(admin.getId())) {
+        if (!adminRepository.existsById(admin.getId()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin Not Found");
-        }
 
         List<Order> orders = orderRepository.findAll();
         return orderMapper.toDtoList(orders);
@@ -118,9 +128,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto updateOrder(OrderDto orderDto, Admin admin) {
-        if (!adminRepository.existsById(admin.getId())) {
+        if (!adminRepository.existsById(admin.getId()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin Not Found");
-        }
 
         Order order = orderRepository.findById(orderDto.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
@@ -131,12 +140,19 @@ public class OrderServiceImpl implements OrderService {
 
         if (orderDto.getCodePromo() != null) {
             order.setCodePromo(orderDto.getCodePromo());
-            BigDecimal remise = BigDecimal.ZERO;
+
+            BigDecimal remiseCodePromo = BigDecimal.ZERO;
             if ("PROMO10".equalsIgnoreCase(orderDto.getCodePromo())) {
-                remise = order.getSousTotalHT().multiply(BigDecimal.valueOf(0.10));
+                remiseCodePromo = order.getSousTotalHT().multiply(BigDecimal.valueOf(0.10));
             }
-            order.setMontantRemise(remise);
-            order.setMontantHTApresRemise(order.getSousTotalHT().subtract(remise));
+
+            BigDecimal remiseFidelite = loyaltyService.calculateDiscountAmount(
+                    order.getSousTotalHT(), loyaltyService.getFidelityDiscount(order.getClient(), order.getSousTotalHT()));
+
+            BigDecimal totalRemise = remiseCodePromo.add(remiseFidelite);
+            order.setMontantRemise(totalRemise);
+            order.setMontantHTApresRemise(order.getSousTotalHT().subtract(totalRemise));
+
             BigDecimal tva = order.getMontantHTApresRemise().multiply(BigDecimal.valueOf(0.2));
             order.setTva(tva);
             order.setTotalTTC(order.getMontantHTApresRemise().add(tva));
@@ -146,5 +162,4 @@ public class OrderServiceImpl implements OrderService {
         Order updatedOrder = orderRepository.save(order);
         return orderMapper.toDto(updatedOrder);
     }
-
 }
