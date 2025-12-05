@@ -1,11 +1,13 @@
 package com.example.SmartShop.controller;
 
 import com.example.SmartShop.dto.ClientDto;
+import com.example.SmartShop.dto.ClientProfileDto;
 import com.example.SmartShop.mapper.ClientMapper;
 import com.example.SmartShop.model.entitie.Admin;
 import com.example.SmartShop.model.entitie.Client;
 import com.example.SmartShop.service.AdminService;
 import com.example.SmartShop.service.ClientService;
+import com.example.SmartShop.service.CustomerService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
@@ -22,10 +24,13 @@ public class ClientController {
 
     private final ClientService clientService;
     private final AdminService adminService;
+    private final CustomerService customerService;
 
-    public ClientController(ClientService clientService, AdminService adminService) {
+
+    public ClientController(ClientService clientService, AdminService adminService, CustomerService customerService ) {
         this.clientService = clientService;
         this.adminService = adminService;
+        this.customerService = customerService;
     }
 
     private Admin getAdminFromSession(HttpServletRequest request) {
@@ -72,6 +77,21 @@ public class ClientController {
         Admin admin = getAdminFromSession(request);
         ClientDto dtol = clientService.updateClientById(id,dto,admin);
         return ResponseEntity.ok(dtol);
+    }
+
+
+
+    private Long getClientIdFromSession(HttpServletRequest request) {
+        Long clientId = (Long) request.getSession().getAttribute("userId");
+        if (clientId == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        return clientId;
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<ClientProfileDto> getProfile(HttpServletRequest request) {
+        Long clientId = getClientIdFromSession(request);
+        ClientProfileDto profile = customerService.getClientProfile(clientId);
+        return ResponseEntity.ok(profile);
     }
 
 }
