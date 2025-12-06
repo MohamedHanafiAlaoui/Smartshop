@@ -89,6 +89,32 @@ public class ProductController {
         return ResponseEntity.ok(message);
     }
 
+    @GetMapping("/filter")
+    public ResponseEntity<?> getFilteredProducts(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request
+    ) {
+        Admin admin = getAdminFromSession(request);
+
+        var productsPage = productService.getProductsWithFilters(
+                search,
+                minPrice,
+                maxPrice,
+                page,
+                size,
+                admin
+        );
+
+        var dtoPage = productsPage.map(ProductMapper::toDto);
+
+        return ResponseEntity.ok(dtoPage);
+    }
+
+
 
 
 }
