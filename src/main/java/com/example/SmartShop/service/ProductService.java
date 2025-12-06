@@ -4,6 +4,9 @@ import com.example.SmartShop.dto.ProductDto;
 import com.example.SmartShop.model.entitie.Admin;
 import com.example.SmartShop.model.entitie.Product;
 import com.example.SmartShop.repository.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -89,4 +92,30 @@ public class ProductService {
 
         return "this product is deleted";
     }
+
+
+    public Page<Product> getProductsWithFilters(
+            String search,
+            Double minPrice,
+            Double maxPrice,
+            int page,
+            int size,
+            Admin admin
+    ) {
+
+        if (!adminService.hasPermission(admin, "getAllProduct")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "You don't have permission to perform this action");
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        return productRepository.findByFilters(
+                (search == null || search.isEmpty()) ? null : search,
+                minPrice,
+                maxPrice,
+                pageable
+        );
+    }
+
 }
